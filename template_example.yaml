@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Example for create lambda layer
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: python3.8
+    CodeUri: service/
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        DATABASE_URL: a
+        MONGODB_URL: a
+
+Resources:
+  DatabaseLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: database-layer
+      Description: Database layer example
+      ContentUri: layers/database/.
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: python3.8
+
+  MongoDbLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: mongodb-layer
+      Description: Mongo layer example
+      ContentUri: layers/mongodb/.
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: python3.8
+
+  LayerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Layers:
+        - !Ref DatabaseLayer
+        - !Ref MongoDbLayer
+
+Outputs:
+  LayerFunction:
+    Description: "Layer Lambda Function ARN"
+    Value: !GetAtt LayerFunction.Arn
+
+  LayerFunctionIamRole:
+    Description: "Implicit IAM Role created for Layer function"
+    Value: !GetAtt LayerFunctionRole.Arn
